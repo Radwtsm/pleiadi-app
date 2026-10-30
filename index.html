@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pleiadi Studio</title>
+<style>
+:root { color-scheme: dark light; --sfondo: #000; --testo: #f2eeec; --tenue: #9b96a0; --pieno: #141417; --accento: #e8253f; --su: #000; }
+@media (prefers-color-scheme: light) { :root { --sfondo: #edecf0; --testo: #16151a; --tenue: #5e5a64; --pieno: #fff; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--sfondo); color: var(--testo); font: 1.0625rem/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+main { max-width: 44rem; margin: 0 auto; padding: clamp(2rem, 8vw, 5rem) 1rem; display: grid; gap: 1.5rem; }
+p { margin: 0; }
+h1 { margin: 0; color: var(--accento); font-size: clamp(2rem, 8vw, 3.5rem); line-height: 1.1; font-weight: 600; }
+h2 { margin: 0 0 .75rem; font-size: 1.0625rem; font-weight: 600; }
+.tenue { color: var(--tenue); }
+.scarica { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+.tasto { display: flex; align-items: center; justify-content: center; min-height: 3.5rem; padding: 0 1rem; border-radius: .75rem; background: var(--pieno); color: var(--testo); text-decoration: none; font-weight: 600; }
+.tasto.tuo { background: var(--accento); color: var(--su); }
+section { padding: 1rem; border-radius: 1rem; background: var(--pieno); }
+ol { margin: 0; padding-left: 1.5rem; display: grid; gap: .5rem; }
+section[hidden] { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Pleiadi Studio</h1>
+  <p>L'app del team. Scaricala, aprila, incolla il codice d'invito: fa tutto lei.</p>
+  <div class="scarica">
+    <a class="tasto" id="mac" href="https://github.com/Radwtsm/pleiadi-app/releases/latest/download/Pleiadi.dmg">Scarica per Mac</a>
+    <a class="tasto" id="win" href="https://github.com/Radwtsm/pleiadi-app/releases/latest/download/Pleiadi-setup.exe">Scarica per Windows</a>
+  </div>
+  <section id="guida-mac">
+    <h2>Su Mac, solo la prima volta</h2>
+    <ol>
+      <li>Apri <b>Pleiadi.dmg</b> e trascina Pleiadi in Applicazioni.</li>
+      <li>Apri Pleiadi: il Mac dice che non può verificarla. Premi <b>Fine</b>.</li>
+      <li>Apri <b>Impostazioni di Sistema → Privacy e sicurezza</b>, scorri in fondo e premi <b>Apri comunque</b>.</li>
+      <li>Conferma con <b>Apri comunque</b> e la password del Mac. Da qui in poi si apre e si aggiorna da sola.</li>
+    </ol>
+  </section>
+  <section id="guida-win">
+    <h2>Su Windows, solo la prima volta</h2>
+    <ol>
+      <li>Apri <b>Pleiadi-setup.exe</b>.</li>
+      <li>Se compare «PC protetto da Windows», premi <b>Ulteriori informazioni</b>, poi <b>Esegui comunque</b>.</li>
+      <li>Finita l'installazione si apre da sola. Da qui in poi si aggiorna da sola.</li>
+    </ol>
+  </section>
+  <p class="tenue">Il blocco compare perché l'app non ha una firma a pagamento. Serve un codice d'invito per entrare: se non ce l'hai, chiedilo a chi ti ha mandato qui.</p>
+</main>
+<script>
+const win = /Windows/i.test(navigator.userAgent);
+document.getElementById(win ? "win" : "mac").classList.add("tuo");
+document.getElementById(win ? "guida-mac" : "guida-win").hidden = true;
+</script>
+</body>
+</html>
