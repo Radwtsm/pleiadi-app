@@ -1,0 +1,67 @@
+# Pleiadi Studio for Windows, built here because Actions minutes are free on a public repo (owner 04/11). The source
+# stays in the private repo: read-only deploy key AGENZIA_DEPLOY_KEY. Started only by hand (no push, no pull_request:
+# forks never get the secrets): `rilascia.py` with rilascio=true (signed installer), `prova-windows.sh` without.
+name: windows
+run-name: ${{ inputs.sha }}${{ !inputs.rilascio && '-prova' || '' }}
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: commit di Radwtsm/agenzia-crew da costruire
+        required: true
+      rilascio:
+        description: installer firmato per il rilascio
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: windows-${{ inputs.rilascio && 'rilascio' || inputs.sha }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: windows-2025
+    defaults:
+      run:
+        shell: bash
+        working-directory: src/app/pleiadi-tauri
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955  # v4.3.0
+        with:
+          repository: Radwtsm/agenzia-crew
+          ref: ${{ inputs.sha }}
+          ssh-key: ${{ secrets.AGENZIA_DEPLOY_KEY }}
+          path: src
+          sparse-checkout: app/pleiadi-tauri
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
+        with:
+          node-version: 24
+      - run: npm ci --no-fund --no-audit
+      - run: npm run controlla  # tokens, CSS, types: the same rules as the app-pleiadi check
+      - run: npx tauri icon src-tauri/icons/icon.png  # icon.ico for the .exe (generated here, not in the repo)
+      - run: npx tauri build --no-bundle
+        if: ${{ !inputs.rilascio }}
+      - name: installer firmato
+        if: ${{ inputs.rilascio }}
+        run: npx tauri build --bundles nsis --config '{"bundle":{"createUpdaterArtifacts":true}}'
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+        if: ${{ inputs.rilascio }}
+        with:
+          name: pleiadi-rilascio-windows
+          path: src/app/pleiadi-tauri/src-tauri/target/release/bundle/nsis/*
+          retention-days: 2
+      - name: zip
+        if: ${{ !inputs.rilascio }}
+        run: |
+          mkdir -p out && cp src-tauri/target/release/pleiadi.exe out/
+          (cd out && 7z a -bso0 ../pleiadi-windows.zip pleiadi.exe)
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+        if: ${{ !inputs.rilascio }}
+        with:
+          name: pleiadi-windows
+          path: src/app/pleiadi-tauri/pleiadi-windows.zip
+          retention-days: 14
