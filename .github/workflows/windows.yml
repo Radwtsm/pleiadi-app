@@ -1,6 +1,6 @@
 # Pleiadi Studio for Windows, built here because Actions minutes are free on a public repo (owner 04/11). The source
 # stays in the private repo: read-only deploy key AGENZIA_DEPLOY_KEY. Started only by hand (no push, no pull_request:
-# forks never get the secrets): `rilascia.py` with rilascio=true (signed installer), `prova-windows.sh` without.
+# forks never get the secrets): `rilascia.py` with rilascio=true (installer, signed afterwards on the Mac), `prova-windows.sh` without.
 name: windows
 run-name: ${{ inputs.sha }}${{ !inputs.rilascio && '-prova' || '' }}
 on:
@@ -10,7 +10,7 @@ on:
         description: commit di Radwtsm/agenzia-crew da costruire
         required: true
       rilascio:
-        description: installer firmato per il rilascio
+        description: installer per il rilascio (firmato poi da rilascia.py)
         type: boolean
         default: false
 permissions:
@@ -42,12 +42,11 @@ jobs:
       - run: npx tauri icon src-tauri/icons/icon.png  # icon.ico for the .exe (generated here, not in the repo)
       - run: npx tauri build --no-bundle
         if: ${{ !inputs.rilascio }}
-      - name: installer firmato
+      # senza chiave di firma (A127): chi prendesse l'account la porterebbe via con un workflow. L'installer esce
+      # senza firma degli aggiornamenti e la mette rilascia.py sul Mac del manutentore, dopo i suoi controlli.
+      - name: installer
         if: ${{ inputs.rilascio }}
-        run: npx tauri build --bundles nsis --config '{"bundle":{"createUpdaterArtifacts":true}}'
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ""
+        run: npx tauri build --bundles nsis
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
         if: ${{ inputs.rilascio }}
         with:
